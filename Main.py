@@ -92,10 +92,10 @@ def play_game(board2, screen, ai_type):
             initial_time = time.time()
 
             if ai_type == "minimax":
-                best_move = ai.minimax(board2, 5, PLAYER, -np.inf, np.inf, True)[0]
+                best_move = ai.minimax(board2, 5, AI, -np.inf, np.inf, True)[0]
                 best_move-=1
             elif ai_type == "mcts":
-                best_move = MCTS.UCT(Connect4State(width=7, height=6, board=board2), itermax=1000, verbose=False)
+                best_move = MCTS.UCT(Connect4State(width=7, height=6, board=board2), itermax=300, verbose=False)
 
             place_piece(board2, AI, best_move+1)
 

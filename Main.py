@@ -10,6 +10,7 @@ import random
 import time
 import MCTS
 from MCTS import Connect4State
+import json
 
 PLAYER = 1
 AI = 2
@@ -56,7 +57,17 @@ def get_menu_choice():
                 elif event.pos[1] >= 250 and event.pos[1] < 290:
                     return "quit"
 
+
+
 def play_game(board2, screen, ai_type):
+    # Load game data from file
+    game_states_dict = {}
+    try:
+        with open(r"C:\Project Connect Four\projectcommuction\projectconnectfour1\game_states.json", "r") as file:
+            game_states_dict = json.load(file)
+    except FileNotFoundError:
+        pass
+
     turn = 1
     is_game_won = False
     col = 0
@@ -90,12 +101,19 @@ def play_game(board2, screen, ai_type):
 
         elif turn == AI:
             initial_time = time.time()
-
-            if ai_type == "minimax":
-                best_move = ai.minimax(board2, 5, AI, -np.inf, np.inf, True)[0]
+            board_tuple = tuple(map(tuple, board2))
+            
+            if str(board_tuple) in game_states_dict:
+                best_move = game_states_dict[str(board_tuple)]
                 best_move-=1
-            elif ai_type == "mcts":
-                best_move = MCTS.UCT(Connect4State(width=7, height=6, board=board2), itermax=300, verbose=False)
+                print("here")
+            
+            else:
+                if ai_type == "minimax":
+                    best_move = ai.pick_best_move(board2, AI, game_states_dict)
+                    best_move-=1
+                elif ai_type == "mcts":
+                    best_move = MCTS.UCT(Connect4State(width=7, height=6, board=board2,playerJustMoved=1), itermax=5000, verbose=False)
 
             place_piece(board2, AI, best_move+1)
 
@@ -115,12 +133,21 @@ def play_game(board2, screen, ai_type):
                 continue
 
     if is_game_won:
+        
         running_time = sum(minimax_times) / len(minimax_times)
         print("Thank you for playing!")
         print("Average minimax running time: %.4f seconds" % running_time)
         print("Total number of moves: %s" % total_moves)
 
 def play_ai_vs_ai(board2, screen):
+    # Load game data from file
+    game_states_dict = {}
+    try:
+        with open(r"C:\Users\ofekm\states\game_data.json", "r") as file:
+            game_states_dict = json.load(file)
+    except FileNotFoundError:
+        pass
+
     turn = 1
     is_game_won = False
     total_moves = 0
@@ -131,19 +158,23 @@ def play_ai_vs_ai(board2, screen):
         total_moves += 1
         if turn == 1:
             initial_time = time.time()
-            best_move = ai.pick_best_move(board2, AI)
-            place_piece(board2, AI, best_move)
+            board_tuple = tuple(map(tuple, board2))
+            if str(board_tuple) in game_states_dict:
+                best_move = game_states_dict[str(board_tuple)]
+            else:
+                best_move = ai.pick_best_move(board2, PLAYER, game_states_dict)
+            place_piece(board2, PLAYER, best_move)
             running_time = time.time() - initial_time
             minimax_times.append(running_time)
-            is_game_won = game_logic.winning_move(board2, AI)
+            is_game_won = game_logic.winning_move(board2, PLAYER)
             turn = 2
         else:
             initial_time = time.time()
-            best_move = MCTS.UCT(Connect4State(width=7, height=6, board=board2), itermax=1000, verbose=False)
-            place_piece(board2, PLAYER, best_move+1)
+            best_move = MCTS.UCT(Connect4State(width=7, height=6, board=board2,playerJustMoved=PLAYER), itermax=1000, verbose=False)
+            place_piece(board2, AI, best_move+1)
             running_time = time.time() - initial_time
             mcts_times.append(running_time)
-            is_game_won = game_logic.winning_move(board2, PLAYER)
+            is_game_won = game_logic.winning_move(board2, AI)
             turn = 1
 
         gui.draw_board(screen, board2)
@@ -154,14 +185,16 @@ def play_ai_vs_ai(board2, screen):
         minimax_avg_time = sum(minimax_times) / len(minimax_times)
         mcts_avg_time = sum(mcts_times) / len(mcts_times)
         print("Game over!")
-        if(turn==2):
-            print("the winner is minmax")
+        if turn == 2:
+            print("The winner is Minimax")
         else:
-            print("the winner is MCTS")
+            print("The winner is MCTS")
 
         print("Average Minimax running time: %.4f seconds" % minimax_avg_time)
         print("Average MCTS running time: %.4f seconds" % mcts_avg_time)
         print("Total number of moves: %s" % total_moves)
+        time.sleep(40)
+
 
 def main():
     board2 = board.create_board()

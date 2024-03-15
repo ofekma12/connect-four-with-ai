@@ -1,12 +1,11 @@
-# completo_MCTS.py
 
 import numpy as np
 import math
 import random
 
 class Connect4State:
-    def __init__(self, width=7, height=6, board=None):
-        self.playerJustMoved = 2
+    def __init__(self, width=7, height=6, board=None,playerJustMoved=2):
+        self.playerJustMoved = playerJustMoved
         self.winner = 0
         self.width = width
         self.height = height
@@ -89,21 +88,3 @@ class Node:
 
 def UCT(rootstate, itermax, verbose=False):
     rootnode = Node(state=rootstate)
-    for i in range(itermax):
-        node = rootnode
-        state = rootstate.Clone()
-        while node.untriedMoves == [] and node.childNodes != []:
-            node = node.UCTSelectChild()
-            state.DoMove(node.move)
-        if node.untriedMoves != []:
-            m = random.choice(node.untriedMoves)
-            state.DoMove(m)
-            node = node.AddChild(m, state)
-        while state.GetMoves() != []:
-            state.DoMove(random.choice(state.GetMoves()))
-        while node is not None:
-            node.Update(state.GetResult(node.playerJustMoved))
-            node = node.parentNode
-    move = sorted(rootnode.childNodes, key=lambda c: c.wins / c.visits)[-1].move
-
-    return move

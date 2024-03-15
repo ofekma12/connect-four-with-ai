@@ -143,7 +143,7 @@ def play_ai_vs_ai(board2, screen):
     # Load game data from file
     game_states_dict = {}
     try:
-        with open(r"C:\Users\ofekm\states\game_data.json", "r") as file:
+        with open(r"C:\Project Connect Four\projectcommuction\projectconnectfour1\game_states.json", "r") as file:
             game_states_dict = json.load(file)
     except FileNotFoundError:
         pass

@@ -138,7 +138,12 @@ def minimax(board, ply, piece, alpha, beta, maxi_player, col=20):
 
     return col, value
 
-def pick_best_move(board, piece, depth=5):
+def pick_best_move(board, piece, game_states_dict, depth=5):
+    board_tuple = tuple(map(tuple, board))
+    if board_tuple in game_states_dict:
+        print("here")
+        return game_states_dict[board_tuple]
+
     valid_locations = get_valid_locations(board)
     if not valid_locations:
         return None
@@ -152,4 +157,5 @@ def pick_best_move(board, piece, depth=5):
             best_score = score
             best_col = col
 
+    game_states_dict[board_tuple] = best_col
     return best_col
